@@ -130,6 +130,8 @@ val stringDF = readStream.selectExpr("CAST(value AS STRING)")
 
 ## writeStream method
 We can write DF to console or another kafka topic. You can two examples in this project. 
+
+
 ```
  // Write to console.
   contactDF.writeStream
