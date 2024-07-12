@@ -39,5 +39,65 @@ https://github.com/cdarlint/winutils You can use this link to access winutils.ex
 
 ## Builting Spark Application
 
+ ### Connection to the SparkSession
+```
+  val conf = new SparkConf().setAppName("SparkKafkaStreaming")
+    .set("spark.streaming.stopGracefullyOnShutdown","true")
+    .set("spark.hadoop.hadoop.home.dir", "C:\\hadoop") // Set Hadoop home directory
+    .set("spark.driver.extraLibraryPath", "C:\\hadoop\\bin") // Set path to directory containing winutils.exe
+    .set("spark.executor.extraLibraryPath", "C:\\hadoop\\bin") // Set path to directory containing winutils.exe for executors
 
+  val spark = SparkSession.builder()
+    .master("local[2]") //where the spark will run
+    .config(conf)  // Use local file system
+    .getOrCreate()
+```
++ 'conf' variable carries the setups,as spark executor, hadoop direction, library path and spark streaming.
++ **Meaning of stopGracefullyOnShutdown:**  Spark Streaming jobs are long-running jobs and their tasks need to be executed 7*24 hours, but there are cases like upgrading the code or updating the Spark configuration, where the program needs to be actively stopped. However, for distributed programs, there is no way to kill processes one by one. It is very important to shut down all configurations gracefully.
++ After conf variable is ready, SparkSession builder is started with these configuration features. (.config(conf))
++ .master[local[*]) says the program will run on local machine, * number of threads. Threads: are the virtual components or codes, which divide the physical core of a CPU into multiple virtual cores.
+  
+ ### Read from Kafka
+
+ ```
+val topicName = "test"
+  //Read The Stream
+  val readStream = spark.readStream
+    .format("kafka") //determines the format
+    .option("kafka.bootstrap.servers","localhost:9092")
+    .option("subscribe",topicName)
+    .option("startingOffsets","earliest")
+    .load()
+```
++ The lines of codes are creating streaming DataFrames that are different than default DataFrames. The data came to these frames from Kafka.
++ kafka servers are running localhost, port 9092 as default. You can check by examining server.properties.
+    - Start kafka servers firstly not to have exception: (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
++ topicName points which topic will be used to read operation.
+  #### Structure of readStream
+  ![image](https://github.com/user-attachments/assets/30077215-c200-4906-b109-ef0332beedcb)
+  + After readStream is created, it has following attributes. The value column in the DataFrame created by spark.readStream from Kafka contains the payload of the Kafka messages. This payload is in _binary_ format (binary type). The actual content and structure of the value depend on what you have produced to the Kafka topic. It could be any serialized data, such as: Plain text, JSON, Avro, Protobuf, Any other serialized format
+To work with the value data, you often need to deserialize it into a more structured format.
+
+## Serializing value attribute and creating schema
+
+```
+val stringDF = readStream.selectExpr("CAST(value AS STRING)")
+
+//Note: The schema ensures the data types are enforced when DataFrame is ready.
+  val dataSchema = new StructType()
+    .add("id",IntegerType, nullable = false)
+    .add("firstname", StringType, nullable = false)
+    .add("lastname", StringType, nullable = false)
+    .add("address", StringType, nullable = true)
+    .add("phone", StringType, nullable = true)
+    .add("loginDate", StringType, nullable = true)
+    .add("birthDay", StringType, nullable = true)
  
+  var contactDF = stringDF
+    .select(explode(from_json(col("value"), ArrayType(dataSchema))).alias("data"))
+    .select("data.*")
+```
++ stringDF is deserialized as String.
++ dataSchema represents the data that will come from kafka, it has the attributes of the Contact object (check the Kafka Producer example: )
++ The last row  
+  
