@@ -97,7 +97,8 @@ val stringDF = readStream.selectExpr("CAST(value AS STRING)")
     .select(explode(from_json(col("value"), ArrayType(dataSchema))).alias("data"))
     .select("data.*")
 ```
-+ stringDF is deserialized as String.
++ The first step of deserialization: stringDF created. Converting the raw binary data into a human-readable string format. 
 + dataSchema represents the data that will come from kafka, it has the attributes of the Contact object (check the Kafka Producer example: )
-+ The last row  
-  
++ The second step of deserialization: the last line of code tells that stringDF value String, will be formatted from 'JSON' to schema proper dataFrame. !!
+
+## Spark Jobs?
