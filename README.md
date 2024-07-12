@@ -20,7 +20,7 @@ Integrating Kafka and Spark can help you build a reliable and scalable data proc
 + Kafka Producer (You can check kafka_producer app: )
 + Hadoop Installation
 + Spark Installation
-> Note: Spark is built in Scala language, it may perform better in Scala that's PL is Scala.
+> Note: Spark is built in Scala language, it may perform better in Scala that's PL is Scala. However, it can be written in Java, Python (PysSpark), R etc.
 
 ## What is Hadoop and Why do we need Hadoop?
 The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models. However Spark and Hadoop seem similar, Spark is a enhanced model compared to Hadoop. It works simplier and faster.
@@ -99,7 +99,7 @@ val stringDF = readStream.selectExpr("CAST(value AS STRING)")
 ```
 + The first step of deserialization: stringDF created. Converting the raw binary data into a human-readable string format. 
 + dataSchema represents the data that will come from kafka, it has the attributes of the Contact object (check the Kafka Producer example: )
-+ The second step of deserialization: the last line of code tells that stringDF value String, will be formatted from 'JSON' to schema proper dataFrame. !!
++ The second step of deserialization: the last line of code tells that stringDF value String, will be formatted from 'JSON' to schema proper dataFrame.**
 
 ## Various Spark Jobs?
 ###### The program aims to tranform the data, so there are many jobs to process data. 
@@ -140,3 +140,11 @@ We can write DF to console or another kafka topic. You can two examples in this 
   query.awaitTermination()
 ```
 > It is important to add awaitTermination() method, it forces the application to listen write into kafka toics continously without shutting down.
+
+## Important Reminders:
+
+![image](https://github.com/user-attachments/assets/bcf52e81-dfd1-4ae8-bb6b-fc11280be095)
+
++ IntelliJ is used as IDE. It is important to choose language as Scala
++ Please control the version of spark and scala.
++ Because Scala runs on the Java platform (Java virtual machine), it is important to choose JDK. And working with Java 11 is recommended.**
