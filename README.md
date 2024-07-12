@@ -18,4 +18,26 @@ Integrating Kafka and Spark can help you build a reliable and scalable data proc
 
 ### Prerequisites:
 + Kafka Producer (You can check kafka_producer app: )
++ Hadoop Installation
++ Spark Installation
+> Note: Spark is built in Scala language, it may perform better in Scala that's PL is Scala.
 
+## What is Hadoop and Why do we need Hadoop?
+The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models. However Spark and Hadoop seem similar, Spark is a enhanced model compared to Hadoop. It works simplier and faster.
+Spark is using Hadoop's Distributed File System to store data instantly, so, hadoop installation is needed.
+https://github.com/cdarlint/winutils You can use this link to access winutils.exe.
+  + Hadoop Installation Steps:
+    - Download winutils.exe
+    - Create a file named Hadoop in C directory and open a new folder as 'bin'.
+    - Move winutils.exe file, and set the environmental variables.
+    - ![image](https://github.com/user-attachments/assets/6fdc5451-2e1f-40d1-b74a-a61d9e1f8b9e)
+    - Also edit path variable as: %HADOOP_HOME%\bin
+  + Spark Installation Steps:
+    - Go to, https://spark.apache.org/downloads.html, download Spark
+    - Extract downloaded files to C drive folder spark.
+    - Set your environmental variables
+
+## Builting Spark Application
+
+
+ 
