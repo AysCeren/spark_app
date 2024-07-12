@@ -101,4 +101,42 @@ val stringDF = readStream.selectExpr("CAST(value AS STRING)")
 + dataSchema represents the data that will come from kafka, it has the attributes of the Contact object (check the Kafka Producer example: )
 + The second step of deserialization: the last line of code tells that stringDF value String, will be formatted from 'JSON' to schema proper dataFrame. !!
 
-## Spark Jobs?
+## Various Spark Jobs?
+###### The program aims to tranform the data, so there are many jobs to process data. 
+
+  - 1. Validate data, this job organize columns with correct data types and attribute names
+  ```
+ //This is cleaning the data if there is a wrong-typed data, or if the column name is wanted to be changed
+  contactDF.select(
+    col("firstname").cast(StringType).as("firstname"),
+    col("lastname").cast(StringType).as("lastname"),
+    col("address").cast(StringType).as("address"),
+    col("phone").cast(StringType).as("phone"),
+    col("birthDay").cast(StringType).as("birthDay"),
+    col("loginDate").cast(StringType).as("loginDate")
+  )
+  ```
+  - 2. Dropping null values
+```
+//Filling the null values for the DataFrame:
+  contactDF = contactDF.na.fill("-", Seq("firstname"))
+    .na.fill("-",Seq("lastname"))
+    .na.fill("-", Seq("address"))
+    .na.fill("-",Seq("phone"))
+    .na.fill("-", Seq("birthDay"))
+    .na.fill("-", Seq("loginDate"))
+```
+**Note: Different process can be implemented, check the following code for the next steps.**
+
+## writeStream method
+We can write DF to console or another kafka topic. You can two examples in this project. 
+```
+ // Write to console.
+  contactDF.writeStream
+    .format("console")
+    .outputMode("update")
+    .option("truncate","true")
+    .start()
+  query.awaitTermination()
+```
+> It is important to add awaitTermination() method, it forces the application to listen write into kafka toics continously without shutting down.
