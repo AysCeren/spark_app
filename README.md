@@ -17,7 +17,7 @@ Stream processing is a core concept of “Big Data” processing/analysis and ev
 Integrating Kafka and Spark can help you build a reliable and scalable data processing pipeline that can handle real-time data streams and turn them actionable Complex Event Processes (CEPs). Therefore, this project enables kafka and spark integration to make stream processing.
 
 ### Prerequisites:
-+ Kafka Producer (You can check kafka_producer app: )
++ Kafka Producer (You can check kafka_producer app: https://github.com/AysCeren/kafka_producer)
 + Hadoop Installation
 + Spark Installation
 > Note: Spark is built in Scala language, it may perform better in Scala that's PL is Scala. However, it can be written in Java, Python (PysSpark), R etc.
