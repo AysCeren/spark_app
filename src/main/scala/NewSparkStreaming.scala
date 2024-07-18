@@ -27,7 +27,7 @@ object NewSparkStreaming extends App{
   readStream.printSchema()
   Console.println("Start to write your df to console:")
   val stringDF = readStream.selectExpr("CAST(value AS STRING)")
-  //stringDF.writeStream.format("console").start()
+  //stringDF.writeStream.format("console").start() --> to check the stringDF
 
   //Note: The schema ensures the data types are enforced when DataFrame is ready.
   val dataSchema = new StructType()
@@ -40,17 +40,13 @@ object NewSparkStreaming extends App{
     .add("birthDay", StringType, nullable = true)
 
   dataSchema.printTreeString()
-
-  //val contactDF = stringDF.withColumn("value", from_json(col("value"), dataSchema))
-   // .select(col("value.*"))
- // val parsed_df = stringDF.select(from_json(col("value"), dataSchema).alias("data")).select("data.*")
-
+  
   //Parsing for the contact from the string DF
   var contactDF = stringDF
     .select(explode(from_json(col("value"), ArrayType(dataSchema))).alias("data"))
     .select("data.*")
 
-  //basic select stmt.
+  //basic select stmt. as an  example
   contactDF.select("lastname").writeStream.format("console").start()
 
   //This is cleaning the data if there is a wrong-typed data, or if the column name is wanted to be changed
@@ -71,36 +67,25 @@ object NewSparkStreaming extends App{
     .na.fill("-", Seq("birthDay"))
     .na.fill("-", Seq("loginDate"))
 
-//  contactDF = contactDF.withColumn("new1",
-//    when(to_date(col("birthday"), "yyyy-MM-dd").isNotNull, to_date(col("birthday"), "yyyy-MM-dd"))
-//      .otherwise(lit(null).cast(DateType))
-//  )
-
   private val defaultPhoneNumber = "+901111111111"
-  //only the columns having more than 13 char.
+  //The columns will be removed if they are not in the phone format
    contactDF = contactDF
-    .withColumn("phone", when(functions.length(col("phone")) =!= 13, defaultPhoneNumber).otherwise(col("phone")))
- // val ageData = Seq(contactDF.col("birthDay"),contactDF.col("loginDate")).toDF
-  /*contactDF = contactDF
-    .withColumn("age", datediff(current_date(), col("birthday")))*/
-//  val newDataDF =  contactDF.withColumn("new2",to_date(unix_timestamp(contactDF.col("loginDate"), "yyyy-MM-dd").cast("timestamp")))
-  //contactDF = contactDF.withColumn("new", date_format(col("birthDay"),"yyyy-MM-dd"))
-  //val df2 = contactDF.withColumn(date_format(col("birthDay"),"MM/dd/yyyy"))
+    .withColumn("phone", when(functions.length(col("phone")) =!= 13, defaultPhoneNumber).otherwise(col("phone"))
 
   contactDF =  contactDF.withColumn("loginDate",to_date(unix_timestamp(contactDF.col("loginDate"), "dd-MM-yyyy").cast("timestamp")))
   contactDF =  contactDF.withColumn("birthDay",to_date(unix_timestamp(contactDF.col("birthDay"), "dd-MM-yyyy").cast("timestamp")))
   contactDF = contactDF.withColumn("age", (datediff(current_date(), col("birthDay"))/365).cast(IntegerType))
 
-  //Some kind of filter stmt.
-    contactDF.writeStream
-    .format("console")
-    .outputMode("update")
-    .option("truncate","true")
-    .start()
-    .awaitTermination()
+  val query =  contactDF
+  .withColumn("key", contactDF.col("firstname"))
+  .withColumn("value", to_json(struct(contactDF.col("firstname"), col("lastname"), col("address"), col("phone"), col("birthDay"), contactDF.col("age"),col("loginDate")))).writeStream
+  .format("kafka")
+  .option("kafka.bootstrap.servers", "localhost:9092")
+  .option("topic", "writeIntoTopic").option("checkpointLocation", "/tmp/vaquarkhan/checkpoint")// <-- checkpoint directory
+  .start()
+ 
 
   //Why do we need this part: Because Kafka is recording data by grouping into keys and values, we are using key and value as columns
-
   val toWrite = contactDF.withColumn("key", col("firstname"))
     .withColumn("value", to_json(struct(col("firstname"), col("lastname"), col("address"), col("phone"), col("birthDay"), col("loginDate"))))
 
